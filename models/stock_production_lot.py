@@ -11,7 +11,11 @@ class StockProductionLot(models.Model):
     def name_get(self):
         result = []
         for rec in self:
-            result.append((rec.id, f"{rec.name}, {rec.last_rent_date}"))
+            if rec.last_rent_date:
+                name = (rec.name, str(rec.last_rent_date))
+            else:
+                name = (rec.name,)
+            result.append((rec.id, f"{', '.join(name)}"))
         return result
 
     @api.depends("sale_order_count")
@@ -28,5 +32,7 @@ class StockProductionLot(models.Model):
                     if columns and columns[4] == "Stock" and columns[5] == "Rental":
                         rec.last_rent_date = datetime.strptime(columns[2], "%d/%m/%Y %H:%M:%S")
                         break
+                    else:
+                        rec.last_rent_date = False
             else:
                 rec.last_rent_date = False
